@@ -5,6 +5,7 @@ node_modules/
 out/
 build/
 .vercel/
+.DS_Store
 .turbo/
 coverage/
 playwright-report/
