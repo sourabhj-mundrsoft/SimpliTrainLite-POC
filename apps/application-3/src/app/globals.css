@@ -1,0 +1,28 @@
+@import "tailwindcss";
+@source "../../../../packages/shared-ui/src";
+
+/* Application 3 theme: Midnight purple (dark) */
+:root {
+  color-scheme: dark;
+  --color-primary: #c084fc;
+  --color-on-primary: #1e0b33;
+  --color-brand-accent: #d8b4fe;
+  --color-background: #0f0a1f;
+  --color-surface: #1a1433;
+  --color-surface-muted: #221a40;
+  --color-text: #f3e8ff;
+  --color-text-muted: #c4b5e0;
+  --color-text-subtle: #8b7fb0;
+  --color-border: #342a5c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-background);
+  color: var(--color-text);
+  font-family: "Segoe UI", Roboto, Arial, Helvetica, sans-serif;
+}

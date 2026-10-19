@@ -1,0 +1,29 @@
+@import "tailwindcss";
+@source "../../../../packages/shared-ui/src";
+@source "../../../../packages/users/src";
+
+/* Application 2 theme: Forest green (light) */
+:root {
+  color-scheme: light;
+  --color-primary: #15803d;
+  --color-on-primary: #ffffff;
+  --color-brand-accent: #16a34a;
+  --color-background: #ecf6ef;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f2faf4;
+  --color-text: #0f2a1a;
+  --color-text-muted: #4a5f52;
+  --color-text-subtle: #9bb0a3;
+  --color-border: #d3e6d9;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-background);
+  color: var(--color-text);
+  font-family: "Segoe UI", Roboto, Arial, Helvetica, sans-serif;
+}

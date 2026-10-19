@@ -1,0 +1,44 @@
+{
+  "name": "lms-platform-poc",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "dev": "turbo dev",
+    "dev:app1": "turbo dev --filter=@lms/application-1",
+    "dev:app2": "turbo dev --filter=@lms/application-2",
+    "dev:app3": "turbo dev --filter=@lms/application-3",
+    "build": "turbo build",
+    "lint": "turbo lint && eslint e2e scripts playwright.config.ts vitest.config.ts vitest.setup.ts",
+    "typecheck": "turbo typecheck && tsc --noEmit -p tsconfig.e2e.json",
+    "check:boundaries": "node scripts/check-boundaries.mjs",
+    "test": "pnpm check:boundaries && vitest run",
+    "test:e2e": "playwright test",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.0",
+    "@tailwindcss/postcss": "4.3.3",
+    "@testing-library/dom": "10.4.1",
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.8",
+    "@types/node": "24.10.13",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.4.0",
+    "jsdom": "26.1.0",
+    "prettier": "3.9.10",
+    "prettier-plugin-tailwindcss": "0.8.1",
+    "tailwindcss": "4.3.3",
+    "turbo": "2.11.7",
+    "typescript": "5.9.3",
+    "vite": "8.3.4",
+    "vitest": "5.0.4"
+  }
+}
