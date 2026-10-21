@@ -1,6 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
+import { isAppSelected } from "./selected-apps";
 
 type AppExpectation = Readonly<{
+  /** Workspace folder name under apps/, matched against E2E_APPS. */
+  id: string;
   name: string;
   url: string;
   title: RegExp;
@@ -13,6 +16,7 @@ type AppExpectation = Readonly<{
 
 const applications: readonly AppExpectation[] = [
   {
+    id: "application-1",
     name: "Application 1",
     url: "http://localhost:3001",
     title: /Application 1/,
@@ -29,6 +33,7 @@ const applications: readonly AppExpectation[] = [
     ],
   },
   {
+    id: "application-2",
     name: "Application 2",
     url: "http://localhost:3002",
     title: /Application 2/,
@@ -50,6 +55,7 @@ const applications: readonly AppExpectation[] = [
     ],
   },
   {
+    id: "application-3",
     name: "Application 3",
     url: "http://localhost:3003",
     title: /Application 3/,
@@ -63,7 +69,7 @@ function mainNavigation(page: Page) {
   return page.getByRole("navigation", { name: "Main navigation" });
 }
 
-for (const app of applications) {
+for (const app of applications.filter((app) => isAppSelected(app.id))) {
   test(`${app.name} shows the SimpliTrain header with its own navigation`, async ({
     page,
   }) => {

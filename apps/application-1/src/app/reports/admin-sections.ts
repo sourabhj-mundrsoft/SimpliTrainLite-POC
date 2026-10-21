@@ -9,7 +9,7 @@ export const categories: readonly CategoryCard[] = [
     isActive: true,
   },
   {
-    label: "Learning Management",
+    label: "Learning Management 1",
     description: "Courses, certifications, plans and content",
     icon: "book",
     accent: "#7c3aed",

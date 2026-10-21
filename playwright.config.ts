@@ -1,4 +1,11 @@
 import { defineConfig, devices } from "@playwright/test";
+import { isAppSelected } from "./e2e/selected-apps";
+
+const applications = [
+  { id: "application-1", script: "dev:app1", port: 3001 },
+  { id: "application-2", script: "dev:app2", port: 3002 },
+  { id: "application-3", script: "dev:app3", port: 3003 },
+];
 
 export default defineConfig({
   testDir: "./e2e",
@@ -13,24 +20,12 @@ export default defineConfig({
     ...devices["Desktop Chrome"],
     trace: "retain-on-failure",
   },
-  webServer: [
-    {
-      command: "pnpm dev:app1",
-      url: "http://localhost:3001",
+  webServer: applications
+    .filter((app) => isAppSelected(app.id))
+    .map((app) => ({
+      command: `pnpm ${app.script}`,
+      url: `http://localhost:${app.port}`,
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
-    },
-    {
-      command: "pnpm dev:app2",
-      url: "http://localhost:3002",
-      reuseExistingServer: !process.env.CI,
-      timeout: 120_000,
-    },
-    {
-      command: "pnpm dev:app3",
-      url: "http://localhost:3003",
-      reuseExistingServer: !process.env.CI,
-      timeout: 120_000,
-    },
-  ],
+    })),
 });

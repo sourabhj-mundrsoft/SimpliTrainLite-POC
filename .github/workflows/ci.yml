@@ -14,11 +14,118 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  TURBO_TELEMETRY_DISABLED: 1
+  TURBO_NO_UPDATE_NOTIFIER: 1
+
 jobs:
-  validate:
-    name: Validate workspace
+  # Works out which applications the pushed commits affect. Turbo follows the
+  # workspace dependency graph, so a change inside apps/application-1 selects
+  # only application-1, while a change to a shared package (packages/*) selects
+  # every app that depends on it, and a change to root files (lockfile, configs,
+  # this workflow) selects all apps.
+  changes:
+    name: Detect affected applications
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      apps: ${{ steps.detect.outputs.apps }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Detect affected applications
+        id: detect
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            affected=""
+          else
+            affected="--affected"
+            base="${PR_BASE_SHA:-$PUSH_BEFORE_SHA}"
+            # A brand-new branch has no "before" commit; Turbo then falls back to main.
+            if [ -n "$base" ] && [ "$base" != "0000000000000000000000000000000000000000" ]; then
+              export TURBO_SCM_BASE="$base"
+            fi
+            export TURBO_SCM_HEAD="$GITHUB_SHA"
+          fi
+
+          apps=$(pnpm exec turbo run build $affected --dry=json \
+            | jq -c '[.tasks[].package | select(startswith("@lms/application-")) | sub("^@lms/"; "")] | unique')
+
+          echo "Affected applications: $apps"
+          echo "apps=$apps" >> "$GITHUB_OUTPUT"
+
+  # Root-level checks that do not belong to any single application.
+  workspace:
+    name: Workspace checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Boundary checks
+        run: pnpm check:boundaries
+
+      - name: Lint root files
+        run: pnpm exec eslint e2e scripts playwright.config.ts vitest.config.ts vitest.setup.ts
+
+      - name: Typecheck end-to-end tests
+        run: pnpm exec tsc --noEmit -p tsconfig.e2e.json
+
+      - name: Shared package unit tests
+        run: pnpm exec vitest run packages --passWithNoTests
+
+  # One independent job per affected application. A push that only touches
+  # application-1 runs this job for application-1 alone.
+  application:
+    name: ${{ matrix.app }}
+    needs: changes
+    if: needs.changes.outputs.apps != '[]'
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJSON(needs.changes.outputs.apps) }}
 
     steps:
       - name: Check out repository
@@ -42,25 +149,27 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Lint
-        run: pnpm lint
+        run: pnpm exec turbo run lint --filter=@lms/${{ matrix.app }}
 
       - name: Typecheck
-        run: pnpm typecheck
+        run: pnpm exec turbo run typecheck --filter=@lms/${{ matrix.app }}
 
-      - name: Unit tests and boundary checks
-        run: pnpm test
+      - name: Unit tests
+        run: pnpm exec vitest run apps/${{ matrix.app }} --passWithNoTests
 
-      - name: Build applications
-        run: pnpm build
+      - name: Build
+        run: pnpm exec turbo run build --filter=@lms/${{ matrix.app }}
 
       - name: End-to-end tests
+        env:
+          E2E_APPS: ${{ matrix.app }}
         run: pnpm exec playwright test --workers=2
 
       - name: Upload Playwright test results on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-test-results
+          name: playwright-test-results-${{ matrix.app }}
           path: test-results/
           if-no-files-found: ignore
           retention-days: 7
