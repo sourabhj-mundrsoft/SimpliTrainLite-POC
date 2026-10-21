@@ -15,7 +15,7 @@ export const categories: readonly CategoryCard[] = [
     accent: "#7c3aed",
   },
   {
-    label: "Training Management",
+    label: "Training Management 1",
     description: "Instructors, classrooms, classes and rosters",
     icon: "schedule",
     accent: "#c2410c",
