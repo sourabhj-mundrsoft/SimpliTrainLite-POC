@@ -2,7 +2,7 @@ import type { CategoryCard, SidebarGroup } from "@lms/shared-ui";
 
 export const categories: readonly CategoryCard[] = [
   {
-    label: "User Management",
+    label: "User Management 1",
     description: "Profiles, roles, access permissions and groups",
     icon: "users",
     accent: "#1d4ed8",
