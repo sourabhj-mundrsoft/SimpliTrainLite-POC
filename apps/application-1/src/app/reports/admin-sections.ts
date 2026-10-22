@@ -21,7 +21,7 @@ export const categories: readonly CategoryCard[] = [
     accent: "#c2410c",
   },
   {
-    label: "Hybrid Learning",
+    label: "Hybrid Learning 1",
     description: "Blended delivery, virtual meetings and labs",
     icon: "monitor",
     accent: "#0e7490",
