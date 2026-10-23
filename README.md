@@ -59,6 +59,7 @@ apps/
 packages/
   shared-ui/      ── AppShell (SimpliTrain header layout), CategoryCards, SectionSidebar, PagePlaceholder
   users/          ── UsersPanel (grid + Create User modal), users API client, /api/users route handlers
+  data-grid/      ── Standalone virtualized data grid (client/server modes)
 ```
 
 - Each app's root layout renders `<AppShell navigation={...} user={...}>` with its own `src/navigation.ts`. The shell never decides which items an app shows.
