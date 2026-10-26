@@ -20,10 +20,10 @@ env:
 
 jobs:
   # Works out which applications the pushed commits affect. Turbo follows the
-  # workspace dependency graph, so a change inside apps/application-1 selects
-  # only application-1, while a change to a shared package (packages/*) selects
-  # every app that depends on it, and a change to root files (lockfile, configs,
-  # this workflow) selects all apps.
+  # workspace dependency graph, so a change inside apps/simplitrain_lite selects
+  # only @lms/application-1, while a change to a shared package (packages/*)
+  # selects every app that depends on it, and a change to root files (lockfile,
+  # configs, this workflow) selects all apps.
   changes:
     name: Detect affected applications
     runs-on: ubuntu-latest
@@ -115,7 +115,7 @@ jobs:
         run: pnpm exec vitest run packages --passWithNoTests
 
   # One independent job per affected application. A push that only touches
-  # application-1 runs this job for application-1 alone.
+  # simplitrain_lite runs this job for @lms/application-1 alone.
   application:
     name: ${{ matrix.app }}
     needs: changes
@@ -155,7 +155,7 @@ jobs:
         run: pnpm exec turbo run typecheck --filter=@lms/${{ matrix.app }}
 
       - name: Unit tests
-        run: pnpm exec vitest run apps/${{ matrix.app }} --passWithNoTests
+        run: pnpm exec vitest run apps/${{ matrix.app == 'application-1' && 'simplitrain_lite' || matrix.app }} --passWithNoTests
 
       - name: Build
         run: pnpm exec turbo run build --filter=@lms/${{ matrix.app }}
