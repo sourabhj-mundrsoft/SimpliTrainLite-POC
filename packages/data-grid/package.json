@@ -7,6 +7,10 @@
     ".": "./src/index.ts",
     "./styles.css": "./src/data-grid.css"
   },
+  "dependencies": {
+    "@tanstack/react-table": "8.21.3",
+    "@tanstack/react-virtual": "3.14.22"
+  },
   "peerDependencies": {
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.14.22",

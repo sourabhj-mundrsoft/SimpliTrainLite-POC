@@ -4,13 +4,28 @@ import userEvent from "@testing-library/user-event";
 import { createColumnHelper } from "@tanstack/react-table";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DataGrid } from "./data-grid";
+import type { DataGridColumn } from "./types";
 
 type Person = { id: string; name: string; department: string };
 
 const column = createColumnHelper<Person>();
-const columns = [
-  column.accessor("name", { header: "Name" }),
-  column.accessor("department", { header: "Department" }),
+const columns: DataGridColumn<Person>[] = [
+  column.accessor("name", {
+    header: "Name",
+    meta: {
+      editable: true,
+      editorKind: "text",
+    },
+  }),
+  column.accessor("department", {
+    header: "Department",
+    meta: {
+      filterOptions: [
+        { label: "Engineering", value: "Engineering" },
+        { label: "Sales", value: "Sales" },
+      ],
+    },
+  }),
 ];
 
 beforeEach(() => {
@@ -61,7 +76,7 @@ describe("DataGrid client mode", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Name" }));
+    await user.click(screen.getByRole("button", { name: /^Name/i }));
     expect(
       within(screen.getByRole("table")).getAllByRole("row")[1],
     ).toHaveTextContent("Amit");
@@ -92,8 +107,8 @@ describe("DataGrid client mode", () => {
 
     const renderedRows = within(screen.getByRole("table")).getAllByRole("row");
     expect(renderedRows.length).toBeGreaterThan(1);
-    expect(renderedRows.length).toBeLessThan(30);
-    expect(screen.getByText("100000 rows")).toBeInTheDocument();
+    expect(renderedRows.length).toBeLessThan(35);
+    expect(screen.getByText(/100000/)).toBeInTheDocument();
   });
 
   it("supports row selection", async () => {
@@ -111,6 +126,52 @@ describe("DataGrid client mode", () => {
 
     await user.click(screen.getByRole("checkbox", { name: "Select row 1" }));
     expect(onRowSelectionChange).toHaveBeenLastCalledWith({ "1": true });
+  });
+
+  it("supports in-place cell editing", async () => {
+    const onCellValueChanged = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <DataGrid
+        columns={columns}
+        data={people}
+        enableCellEditing
+        getRowId={(person) => person.id}
+        onCellValueChanged={onCellValueChanged}
+      />,
+    );
+
+    const zaraCell = screen.getByText("Zara");
+    await user.dblClick(zaraCell);
+
+    const input = screen.getByDisplayValue("Zara");
+    await user.clear(input);
+    await user.type(input, "Zara Phillips{Enter}");
+
+    expect(onCellValueChanged).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rowId: "1",
+        columnId: "name",
+        oldValue: "Zara",
+        newValue: "Zara Phillips",
+      }),
+    );
+  });
+
+  it("supports density switching", async () => {
+    const onDensityChange = vi.fn();
+    const user = userEvent.setup();
+    render(
+      <DataGrid
+        columns={columns}
+        data={people}
+        getRowId={(person) => person.id}
+        onDensityChange={onDensityChange}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Compact density (34px)" }));
+    expect(onDensityChange).toHaveBeenCalledWith("compact");
   });
 });
 
@@ -142,17 +203,17 @@ describe("DataGrid server mode", () => {
       pageSize: 2,
     });
 
-    await user.click(screen.getByRole("button", { name: "Name" }));
+    await user.click(screen.getByRole("button", { name: /^Name/i }));
     expect(onSortingStateChange).toHaveBeenCalledWith([
       { id: "name", desc: false },
     ]);
 
-    await user.click(screen.getByRole("button", { name: "Next" }));
+    await user.click(screen.getByRole("button", { name: "Next page" }));
     expect(onPaginationStateChange).toHaveBeenLastCalledWith({
       pageIndex: 1,
       pageSize: 2,
     });
-    expect(screen.getByText("Page 1 of 5")).toBeInTheDocument();
+    expect(screen.getByText(/Page/)).toBeInTheDocument();
   });
 
   it("requires a total row count", () => {

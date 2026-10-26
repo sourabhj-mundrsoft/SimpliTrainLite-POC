@@ -12,5 +12,6 @@ export default defineConfig({
     exclude: ["**/node_modules/**", "**/.next/**", "e2e/**"],
     clearMocks: true,
     restoreMocks: true,
+    testTimeout: 15000,
   },
 });

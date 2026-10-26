@@ -11,6 +11,8 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@lms/data-grid": "workspace:*",
+    "@lms/settings": "workspace:*",
     "@lms/shared-ui": "workspace:*",
     "@lms/users": "workspace:*",
     "@tanstack/react-query": "5.104.2",
