@@ -6,7 +6,7 @@ This POC composes independent applications at build/deployment time in one pnpm 
 
 | App                  | Port | Navigation                           | Routes                                      |
 | -------------------- | ---: | ------------------------------------ | ------------------------------------------- |
-| `@lms/application-1` | 3001 | Home, Admin, Reports                 | `/`, `/admin`, `/reports`                   |
+| `@lms/application-1` (`apps/simplitrain_lite`) | 3001 | Home, Admin, Reports                 | `/`, `/admin`, `/reports`                   |
 | `@lms/application-2` | 3002 | Home, Reports, Accounting, Settings  | `/`, `/reports`, `/accounting`, `/settings` |
 | `@lms/application-3` | 3003 | Home, Course Catalog, Event Schedule | `/`, `/course-catalog`, `/event-schedule`   |
 
@@ -68,11 +68,11 @@ Users service contract (`SimplitrainMonolithAppBackend`):
 ## Dependency direction
 
 ```text
-application-1 ─┬──► @lms/shared-ui ──► next, react (peers)
+@lms/application-1 ─┬──► @lms/shared-ui ──► next, react (peers)
 application-2 ─┤
 application-3 ─┘
 
-application-1 ─┬──► @lms/users ──► zod; react, @tanstack/react-query (peers)
+@lms/application-1 ─┬──► @lms/users ──► zod; react, @tanstack/react-query (peers)
 application-2 ─┘
        │
        └── /api/users route ──► USERS_API_URL (users service)

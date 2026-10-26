@@ -24,7 +24,7 @@ The applications are independent and listen on ports 3001, 3002, and 3003. The R
 
 ## Repository boundaries
 
-- `apps/application-1`, `apps/application-2`, and `apps/application-3` own their route trees, root layouts, navigation configs (`src/navigation.ts`), theme tokens, and any app-specific API integration.
+- `apps/simplitrain_lite`, `apps/application-2`, and `apps/application-3` own their route trees, root layouts, navigation configs (`src/navigation.ts`), theme tokens, and any app-specific API integration. The `simplitrain_lite` app retains the workspace package name `@lms/application-1`.
 - All three apps render the shared SimpliTrain header from `@lms/shared-ui`'s `AppShell`. The shell renders only the navigation items the app passes in; it holds no app-specific routes.
 - Applications may depend on explicitly listed packages under `packages/`; applications must not import from each other.
 - Shared packages must not import from `apps/`.

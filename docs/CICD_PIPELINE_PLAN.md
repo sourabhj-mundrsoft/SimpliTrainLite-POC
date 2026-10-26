@@ -21,7 +21,7 @@ not deploy applications.
 
 | Workspace | Directory | Shared dependencies | Current deployment unit |
 |---|---|---|---|
-| `@lms/application-1` | `apps/application-1` | `@lms/shared-ui`, `@lms/users` | Application 1 |
+| `@lms/application-1` | `apps/simplitrain_lite` | `@lms/shared-ui`, `@lms/users` | SimpliTrain Lite |
 | `@lms/application-2` | `apps/application-2` | `@lms/shared-ui`, `@lms/users` | Application 2 |
 | `@lms/application-3` | `apps/application-3` | `@lms/shared-ui` | Application 3 |
 | `@lms/shared-ui` | `packages/shared-ui` | — | No independent runtime |
@@ -39,7 +39,7 @@ are not immutable releases in this setup.
 
 | Changed paths | CI scope | Production deployment scope |
 |---|---|---|
-| `apps/application-1/**` | Application 1 | Application 1 |
+| `apps/simplitrain_lite/**` | SimpliTrain Lite | SimpliTrain Lite |
 | `apps/application-2/**` | Application 2 | Application 2 |
 | `apps/application-3/**` | Application 3 | Application 3 |
 | `packages/shared-ui/**` | All three apps and the package | All three apps |
@@ -153,7 +153,7 @@ Create three separate hosting projects connected to this repository:
 
 | Hosting project | Root directory | Production target |
 |---|---|---|
-| Application 1 | `apps/application-1` | Application 1 |
+| SimpliTrain Lite | `apps/simplitrain_lite` | SimpliTrain Lite |
 | Application 2 | `apps/application-2` | Application 2 |
 | Application 3 | `apps/application-3` | Application 3 |
 

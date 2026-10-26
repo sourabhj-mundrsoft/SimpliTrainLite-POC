@@ -162,7 +162,7 @@ jobs:
 
       - name: End-to-end tests
         env:
-          E2E_APPS: ${{ matrix.app }}
+          E2E_APPS: ${{ matrix.app == 'application-1' && 'simplitrain_lite' || matrix.app }}
         run: pnpm exec playwright test --workers=2
 
       - name: Upload Playwright test results on failure

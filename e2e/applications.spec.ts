@@ -16,7 +16,7 @@ type AppExpectation = Readonly<{
 
 const applications: readonly AppExpectation[] = [
   {
-    id: "application-1",
+    id: "simplitrain_lite",
     name: "Application 1",
     url: "http://localhost:3001",
     title: /Application 1/,
