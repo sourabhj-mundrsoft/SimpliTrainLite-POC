@@ -1,0 +1,26 @@
+@import "tailwindcss";
+@import "@lms/data-grid/styles.css";
+@import "./lite.css";
+@source "../../../../packages/shared-ui/src";
+@source "../../../../packages/users/src";
+@source "../../../../packages/settings/src";
+
+/* Bridge lite design system tokens */
+:root {
+  --color-primary: var(--accent);
+  --color-on-primary: var(--on-accent);
+  --color-brand-accent: var(--accent-hover);
+  --color-background: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-2);
+  --color-text: var(--text);
+  --color-text-muted: var(--muted);
+  --color-border: var(--border);
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+}

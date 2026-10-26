@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @source "../../../../packages/shared-ui/src";
 @source "../../../../packages/users/src";
+@source "../../../../packages/settings/src";
 
 /* Application 2 theme: Forest green (light) */
 :root {

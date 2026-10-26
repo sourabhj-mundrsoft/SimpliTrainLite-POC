@@ -1,10 +1,12 @@
-import { PagePlaceholder } from "@lms/shared-ui";
+"use client";
+
+import { SettingsPanel } from "@lms/settings";
 
 export default function SettingsPage() {
   return (
-    <PagePlaceholder
-      description="Configure organization preferences and integrations."
-      title="Settings"
-    />
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <SettingsPanel />
+    </div>
   );
 }
+

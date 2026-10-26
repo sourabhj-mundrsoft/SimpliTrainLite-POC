@@ -8,98 +8,122 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-  type ColumnDef,
+  type Column,
+  type ColumnFiltersState,
+  type ColumnPinningState,
   type PaginationState,
   type RowSelectionState,
   type SortingState,
   type Updater,
+  type VisibilityState,
 } from "@tanstack/react-table";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
+  useCallback,
   useMemo,
   useRef,
   useState,
   type CSSProperties,
+  type KeyboardEvent,
 } from "react";
-
-export type { PaginationState, RowSelectionState, SortingState };
-export type GridMode = "client" | "server";
-// TanStack columns use different value types, so its heterogeneous column array requires `any`.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type DataGridColumn<TData> = ColumnDef<TData, any>;
-
-export type DataGridProps<TData> = Readonly<{
-  columns: DataGridColumn<TData>[];
-  data: TData[];
-  mode?: GridMode;
-  /** Required total matching row count in server mode. */
-  rowCount?: number;
-  /** Enable client-side pagination. Server mode always paginates. */
-  enablePagination?: boolean;
-  initialPageSize?: number;
-  pageSizeOptions?: number[];
-  initialSorting?: SortingState;
-  sortingState?: SortingState;
-  onSortingStateChange?: (sorting: SortingState) => void;
-  initialGlobalFilter?: string;
-  globalFilter?: string;
-  onGlobalFilterChange?: (filter: string) => void;
-  paginationState?: PaginationState;
-  onPaginationStateChange?: (pagination: PaginationState) => void;
-  rowSelectionState?: RowSelectionState;
-  onRowSelectionChange?: (selection: RowSelectionState) => void;
-  enableRowSelection?: boolean;
-  getRowId?: (row: TData, index: number) => string;
-  isLoading?: boolean;
-  errorMessage?: string;
-  emptyMessage?: string;
-  searchPlaceholder?: string;
-  label?: string;
-  viewportHeight?: number;
-  rowHeight?: number;
-  overscan?: number;
-}>;
-
-const defaultPageSizeOptions = [25, 50, 100];
+import { CellEditor } from "./components/cell-editor";
+import { ColumnHeader } from "./components/column-header";
+import { FloatingFilterRow } from "./components/floating-filter-row";
+import { GridFooter } from "./components/grid-footer";
+import { GridToolbar } from "./components/grid-toolbar";
+import type {
+  CellChangeDetails,
+  DataGridColumn,
+  DataGridColumnMeta,
+  DataGridProps,
+  GridDensity,
+} from "./types";
 
 function stateFromUpdater<T>(updater: Updater<T>, current: T): T {
   return functionalUpdate(updater, current);
 }
 
-function sortLabel(isSorted: false | "asc" | "desc"): string {
-  if (isSorted === "asc") return " (ascending)";
-  if (isSorted === "desc") return " (descending)";
-  return "";
+function getDensityRowHeight(density: GridDensity, customHeight?: number): number {
+  if (customHeight) return customHeight;
+  switch (density) {
+    case "compact":
+      return 34;
+    case "spacious":
+      return 54;
+    case "comfortable":
+    default:
+      return 44;
+  }
+}
+
+function getPinningStyles<TData>(column: Column<TData>): CSSProperties {
+  const isPinned = column.getIsPinned();
+  const isLastLeft = isPinned === "left" && column.getIsLastColumn("left");
+  const isFirstRight = isPinned === "right" && column.getIsFirstColumn("right");
+
+  return {
+    left: isPinned === "left" ? `${column.getStart("left")}px` : undefined,
+    right: isPinned === "right" ? `${column.getAfter("right")}px` : undefined,
+    position: isPinned ? "sticky" : undefined,
+    zIndex: isPinned ? 2 : undefined,
+    boxShadow: isLastLeft
+      ? "3px 0 6px -2px rgba(0, 0, 0, 0.12)"
+      : isFirstRight
+      ? "-3px 0 6px -2px rgba(0, 0, 0, 0.12)"
+      : undefined,
+  };
 }
 
 export function DataGrid<TData>({
-  columns,
+  columns: userColumns,
   data,
   mode = "client",
   rowCount,
-  enablePagination = false,
+  enablePagination = true,
   initialPageSize = 25,
-  pageSizeOptions = defaultPageSizeOptions,
+  pageSizeOptions = [10, 25, 50, 100],
   initialSorting = [],
   sortingState,
   onSortingStateChange,
+  enableMultiSort = true,
   initialGlobalFilter = "",
   globalFilter,
   onGlobalFilterChange,
+  enableGlobalFilter = true,
+  enableColumnFilters = true,
+  enableFloatingFilters = false,
+  columnFiltersState,
+  onColumnFiltersChange,
   paginationState,
   onPaginationStateChange,
   rowSelectionState,
   onRowSelectionChange,
   enableRowSelection = false,
   getRowId,
+  enableColumnPinning = true,
+  columnPinningState,
+  onColumnPinningChange,
+  enableColumnResizing = true,
+  columnResizeMode = "onChange",
+  enableColumnVisibility = true,
+  columnVisibilityState,
+  onColumnVisibilityChange,
+  enableCellEditing = true,
+  onCellValueChanged,
+  density: propDensity,
+  onDensityChange,
+  enableDensityToggle = true,
+  enableExport = true,
+  exportFileName = "export.csv",
+  viewportHeight = 520,
+  rowHeight: customRowHeight,
+  overscan = 8,
   isLoading = false,
   errorMessage,
   emptyMessage = "No rows to display.",
-  searchPlaceholder = "Search rows",
+  searchPlaceholder = "Search all columns...",
   label = "Data grid",
-  viewportHeight = 480,
-  rowHeight = 44,
-  overscan = 8,
+  toolbarActions,
 }: DataGridProps<TData>) {
   const isServerMode = mode === "server";
   if (isServerMode && rowCount === undefined) {
@@ -107,26 +131,90 @@ export function DataGrid<TData>({
   }
 
   const scrollElementRef = useRef<HTMLDivElement>(null);
-  const [internalPagination, setInternalPagination] =
-    useState<PaginationState>({
-      pageIndex: 0,
-      pageSize: initialPageSize,
-    });
-  const [internalSorting, setInternalSorting] =
-    useState<SortingState>(initialSorting);
-  const [internalGlobalFilter, setInternalGlobalFilter] =
-    useState(initialGlobalFilter);
-  const [internalRowSelection, setInternalRowSelection] =
-    useState<RowSelectionState>({});
+
+  // Density state
+  const [internalDensity, setInternalDensity] = useState<GridDensity>("comfortable");
+  const density = propDensity ?? internalDensity;
+  const activeRowHeight = getDensityRowHeight(density, customRowHeight);
+
+  // Floating filter row visibility
+  const [isFloatingFiltersOpen, setIsFloatingFiltersOpen] = useState(enableFloatingFilters);
+
+  // Active editing cell coordinate
+  const [editingCell, setEditingCell] = useState<{ rowId: string; columnId: string } | null>(null);
+
+  // Internal states when un-controlled
+  const [internalPagination, setInternalPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: initialPageSize,
+  });
+  const [internalSorting, setInternalSorting] = useState<SortingState>(initialSorting);
+  const [internalGlobalFilter, setInternalGlobalFilter] = useState(initialGlobalFilter);
+  const [internalColumnFilters, setInternalColumnFilters] = useState<ColumnFiltersState>([]);
+  const [internalRowSelection, setInternalRowSelection] = useState<RowSelectionState>({});
+  const [internalPinning, setInternalPinning] = useState<ColumnPinningState>({
+    left: enableRowSelection ? ["_selection"] : [],
+    right: [],
+  });
+  const [internalVisibility, setInternalVisibility] = useState<VisibilityState>({});
 
   const activePagination = paginationState ?? internalPagination;
   const activeSorting = sortingState ?? internalSorting;
   const activeGlobalFilter = globalFilter ?? internalGlobalFilter;
+  const activeColumnFilters = columnFiltersState ?? internalColumnFilters;
   const activeRowSelection = rowSelectionState ?? internalRowSelection;
+  const activePinning = columnPinningState ?? internalPinning;
+  const activeVisibility = columnVisibilityState ?? internalVisibility;
+
+  // Build columns with selection checkbox column if enabled
+  const allColumns = useMemo<DataGridColumn<TData>[]>(() => {
+    if (!enableRowSelection) return userColumns;
+
+    const selectionCol: DataGridColumn<TData> = {
+      id: "_selection",
+      size: 46,
+      minSize: 46,
+      maxSize: 46,
+      enableResizing: false,
+      enableSorting: false,
+      enableColumnFilter: false,
+      enablePinning: true,
+      header: ({ table }) => (
+        <input
+          type="checkbox"
+          className="lms-checkbox"
+          aria-label="Select all rows on this page"
+          checked={table.getIsAllPageRowsSelected()}
+          onChange={table.getToggleAllPageRowsSelectedHandler()}
+        />
+      ),
+      cell: ({ row }) => (
+        <input
+          type="checkbox"
+          className="lms-checkbox"
+          aria-label={`Select row ${row.id}`}
+          checked={row.getIsSelected()}
+          disabled={!row.getCanSelect()}
+          onChange={row.getToggleSelectedHandler()}
+        />
+      ),
+    };
+
+    return [selectionCol, ...userColumns];
+  }, [enableRowSelection, userColumns]);
+
+  const updatePagination = useCallback(
+    (updater: Updater<PaginationState>) => {
+      const next = stateFromUpdater(updater, activePagination);
+      setInternalPagination(next);
+      onPaginationStateChange?.(next);
+    },
+    [activePagination, onPaginationStateChange],
+  );
 
   const table = useReactTable({
     data,
-    columns,
+    columns: allColumns,
     getRowId,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: isServerMode ? undefined : getSortedRowModel(),
@@ -138,16 +226,29 @@ export function DataGrid<TData>({
     manualPagination: isServerMode,
     rowCount: isServerMode ? rowCount : undefined,
     enableRowSelection,
+    enableMultiSort,
+    enableColumnResizing,
+    columnResizeMode,
+    enablePinning: enableColumnPinning,
     state: {
       globalFilter: activeGlobalFilter,
       pagination: activePagination,
       sorting: activeSorting,
       rowSelection: activeRowSelection,
+      columnPinning: activePinning,
+      columnFilters: activeColumnFilters,
+      columnVisibility: activeVisibility,
     },
     onGlobalFilterChange: (updater) => {
       const next = stateFromUpdater(updater, activeGlobalFilter);
       setInternalGlobalFilter(next);
       onGlobalFilterChange?.(next);
+      updatePagination({ ...activePagination, pageIndex: 0 });
+    },
+    onColumnFiltersChange: (updater) => {
+      const next = stateFromUpdater(updater, activeColumnFilters);
+      setInternalColumnFilters(next);
+      onColumnFiltersChange?.(next);
       updatePagination({ ...activePagination, pageIndex: 0 });
     },
     onPaginationChange: updatePagination,
@@ -162,241 +263,255 @@ export function DataGrid<TData>({
       setInternalRowSelection(next);
       onRowSelectionChange?.(next);
     },
+    onColumnPinningChange: (updater) => {
+      const next = stateFromUpdater(updater, activePinning);
+      setInternalPinning(next);
+      onColumnPinningChange?.(next);
+    },
+    onColumnVisibilityChange: (updater) => {
+      const next = stateFromUpdater(updater, activeVisibility);
+      setInternalVisibility(next);
+      onColumnVisibilityChange?.(next);
+    },
   });
-
-  function updatePagination(updater: Updater<PaginationState>) {
-    const next = stateFromUpdater(updater, activePagination);
-    setInternalPagination(next);
-    onPaginationStateChange?.(next);
-  }
 
   const visibleRows = table.getRowModel().rows;
   const totalRows = isServerMode
     ? rowCount!
     : table.getPrePaginationRowModel().rows.length;
-  const pageCount = Math.max(
-    1,
-    Math.ceil(totalRows / activePagination.pageSize),
-  );
-  const viewportStyle: CSSProperties & { "--grid-row-height": string } = {
-    height: viewportHeight,
-    "--grid-row-height": `${rowHeight}px`,
-  };
+
+  // Row virtualization
   const virtualizer = useVirtualizer({
     count: visibleRows.length,
     getScrollElement: () => scrollElementRef.current,
-    estimateSize: () => rowHeight,
+    estimateSize: () => activeRowHeight,
     overscan,
     initialRect: { width: 1024, height: viewportHeight },
   });
+
   const virtualRows = virtualizer.getVirtualItems();
   const paddingTop = virtualRows.length > 0 ? virtualRows[0]!.start : 0;
   const paddingBottom =
     virtualRows.length > 0
       ? virtualizer.getTotalSize() - virtualRows.at(-1)!.end
       : 0;
-  const columnCount = columns.length + (enableRowSelection ? 1 : 0);
-  const pageLabel = useMemo(() => {
-    if (totalRows === 0) return "0 rows";
-    if (isServerMode || enablePagination) {
-      const start = activePagination.pageIndex * activePagination.pageSize + 1;
-      const end = Math.min(
-        start + visibleRows.length - 1,
-        totalRows,
-      );
-      return `Showing ${start}–${end} of ${totalRows}`;
-    }
-    return `${totalRows} rows`;
-  }, [
-    activePagination.pageIndex,
-    activePagination.pageSize,
-    enablePagination,
-    isServerMode,
-    totalRows,
-    visibleRows.length,
-  ]);
+
+  const handleCellCommit = useCallback(
+    (details: CellChangeDetails<TData>) => {
+      setEditingCell(null);
+      onCellValueChanged?.(details);
+      const col = table.getColumn(details.columnId);
+      const meta = col?.columnDef.meta as DataGridColumnMeta<TData> | undefined;
+      meta?.onCellChange?.(details);
+    },
+    [onCellValueChanged, table],
+  );
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLTableSectionElement>) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "c") {
+        // Copy focused cell or selection
+        const target = e.target as HTMLElement;
+        const cell = target.closest("td");
+        if (cell?.textContent) {
+          navigator.clipboard?.writeText(cell.textContent.trim());
+        }
+      }
+    },
+    [],
+  );
+
+  const viewportStyle: CSSProperties & {
+    "--grid-row-height": string;
+    "--grid-header-height": string;
+  } = {
+    height: viewportHeight,
+    "--grid-row-height": `${activeRowHeight}px`,
+    "--grid-header-height": `${activeRowHeight + 6}px`,
+  };
 
   return (
-    <section aria-label={label} className="lms-data-grid">
-      <div className="lms-data-grid__toolbar">
-        <label className="lms-data-grid__search">
-          <span className="lms-data-grid__visually-hidden">
-            {searchPlaceholder}
-          </span>
-          <input
-            aria-label={searchPlaceholder}
-            onChange={(event) => table.setGlobalFilter(event.target.value)}
-            placeholder={searchPlaceholder}
-            type="search"
-            value={activeGlobalFilter}
-          />
-        </label>
-        {isLoading ? (
-          <span className="lms-data-grid__status" role="status">
-            Loading rows…
-          </span>
-        ) : null}
-        {errorMessage ? (
-          <span className="lms-data-grid__error" role="alert">
-            {errorMessage}
-          </span>
-        ) : null}
-      </div>
+    <section
+      aria-label={label}
+      className={`lms-data-grid lms-data-grid--${density}`}
+    >
+      {/* Top Toolbar with Global Search, Columns, Density, Export */}
+      <GridToolbar
+        table={table}
+        globalFilter={activeGlobalFilter}
+        onGlobalFilterChange={(val) => table.setGlobalFilter(val)}
+        searchPlaceholder={searchPlaceholder}
+        enableGlobalFilter={enableGlobalFilter}
+        enableFloatingFilters={enableColumnFilters}
+        isFloatingFiltersOpen={isFloatingFiltersOpen}
+        onToggleFloatingFilters={() => setIsFloatingFiltersOpen((prev) => !prev)}
+        enableColumnVisibility={enableColumnVisibility}
+        enableDensityToggle={enableDensityToggle}
+        density={density}
+        onDensityChange={(d) => {
+          setInternalDensity(d);
+          onDensityChange?.(d);
+        }}
+        enableExport={enableExport}
+        exportFileName={exportFileName}
+        selectedCount={Object.keys(activeRowSelection).length}
+        isLoading={isLoading}
+        errorMessage={errorMessage}
+        customActions={toolbarActions}
+      />
 
+      {/* Viewport container with virtualization */}
       <div
         aria-busy={isLoading}
         className="lms-data-grid__viewport"
         ref={scrollElementRef}
         style={viewportStyle}
       >
-        <table aria-label={label} className="lms-data-grid__table">
+        <table
+          aria-label={label}
+          className="lms-data-grid__table"
+          style={{ width: table.getTotalSize() || "100%" }}
+        >
+          {/* Header & Floating Filter rows */}
           <thead className="lms-data-grid__head">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
-                {enableRowSelection ? (
-                  <th className="lms-data-grid__selection-cell" scope="col">
-                    <input
-                      aria-label="Select all rows on this page"
-                      checked={table.getIsAllPageRowsSelected()}
-                      onChange={table.getToggleAllPageRowsSelectedHandler()}
-                      type="checkbox"
-                    />
-                  </th>
-                ) : null}
                 {headerGroup.headers.map((header) => {
-                  const sorted = header.column.getIsSorted();
+                  const pinningStyles = getPinningStyles(header.column);
                   return (
                     <th
-                      aria-sort={
-                        sorted === "asc"
-                          ? "ascending"
-                          : sorted === "desc"
-                            ? "descending"
-                            : "none"
-                      }
                       key={header.id}
+                      colSpan={header.colSpan}
+                      style={{
+                        width: header.getSize(),
+                        ...pinningStyles,
+                      }}
+                      className={`lms-data-grid__th ${
+                        header.column.getIsPinned() ? "lms-data-grid__cell--pinned" : ""
+                      }`}
                       scope="col"
                     >
                       {header.isPlaceholder ? null : (
-                        <button
-                          aria-label={`${String(header.column.columnDef.header ?? header.id)}${sortLabel(sorted)}`}
-                          className="lms-data-grid__sort"
-                          disabled={!header.column.getCanSort()}
-                          onClick={header.column.getToggleSortingHandler()}
-                          type="button"
-                        >
-                          {flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                          {sorted === "asc" ? (
-                            <span aria-hidden="true"> ▲</span>
-                          ) : sorted === "desc" ? (
-                            <span aria-hidden="true"> ▼</span>
-                          ) : null}
-                        </button>
+                        <ColumnHeader
+                          header={header}
+                          table={table}
+                          enableColumnResizing={enableColumnResizing}
+                          enableColumnMenu={enableColumnFilters}
+                        />
                       )}
                     </th>
                   );
                 })}
               </tr>
             ))}
+
+            {isFloatingFiltersOpen ? (
+              <FloatingFilterRow
+                headerGroup={table.getHeaderGroups()[0]!}
+                table={table}
+              />
+            ) : null}
           </thead>
-          <tbody>
+
+          {/* Table Body with virtualized rows and inline editing */}
+          <tbody className="lms-data-grid__body" onKeyDown={handleKeyDown}>
             {paddingTop > 0 ? (
-              <tr aria-hidden="true">
-                <td
-                  colSpan={columnCount}
-                  style={{ height: paddingTop, padding: 0 }}
-                />
+              <tr style={{ height: `${paddingTop}px` }} aria-hidden="true">
+                <td colSpan={table.getVisibleLeafColumns().length} />
               </tr>
             ) : null}
-            {virtualRows.map((virtualRow) => {
-              const row = visibleRows[virtualRow.index]!;
-              return (
-                <tr
-                  aria-selected={
-                    enableRowSelection ? row.getIsSelected() : undefined
-                  }
-                  data-index={virtualRow.index}
-                  key={row.id}
-                >
-                  {enableRowSelection ? (
-                    <td className="lms-data-grid__selection-cell">
-                      <input
-                        aria-label={`Select row ${virtualRow.index + 1}`}
-                        checked={row.getIsSelected()}
-                        onChange={row.getToggleSelectedHandler()}
-                        type="checkbox"
-                      />
-                    </td>
-                  ) : null}
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
-                </tr>
-              );
-            })}
-            {paddingBottom > 0 ? (
-              <tr aria-hidden="true">
+
+            {visibleRows.length === 0 ? (
+              <tr>
                 <td
-                  colSpan={columnCount}
-                  style={{ height: paddingBottom, padding: 0 }}
-                />
+                  className="lms-data-grid__empty-cell"
+                  colSpan={table.getVisibleLeafColumns().length}
+                >
+                  {isLoading ? "Loading rows..." : emptyMessage}
+                </td>
+              </tr>
+            ) : (
+              virtualRows.map((virtualRow) => {
+                const row = visibleRows[virtualRow.index]!;
+                const isSelected = row.getIsSelected();
+
+                return (
+                  <tr
+                    key={row.id}
+                    className={`lms-data-grid__row ${
+                      isSelected ? "lms-data-grid__row--selected" : ""
+                    }`}
+                    style={{ height: `${activeRowHeight}px` }}
+                  >
+                    {row.getVisibleCells().map((cell) => {
+                      const meta = cell.column.columnDef.meta as
+                        | DataGridColumnMeta<TData>
+                        | undefined;
+                      const isEditable = enableCellEditing && meta?.editable;
+                      const isEditing =
+                        editingCell?.rowId === row.id &&
+                        editingCell?.columnId === cell.column.id;
+                      const pinningStyles = getPinningStyles(cell.column);
+
+                      return (
+                        <td
+                          key={cell.id}
+                          tabIndex={0}
+                          style={{
+                            width: cell.column.getSize(),
+                            ...pinningStyles,
+                          }}
+                          className={`lms-data-grid__td ${
+                            cell.column.getIsPinned()
+                              ? "lms-data-grid__cell--pinned"
+                              : ""
+                          } ${isEditable ? "lms-data-grid__cell--editable" : ""}`}
+                          onDoubleClick={() => {
+                            if (isEditable) {
+                              setEditingCell({
+                                rowId: row.id,
+                                columnId: cell.column.id,
+                              });
+                            }
+                          }}
+                        >
+                          {isEditing ? (
+                            <CellEditor
+                              cell={cell}
+                              onCommit={handleCellCommit}
+                              onCancel={() => setEditingCell(null)}
+                            />
+                          ) : (
+                            flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })
+            )}
+
+            {paddingBottom > 0 ? (
+              <tr style={{ height: `${paddingBottom}px` }} aria-hidden="true">
+                <td colSpan={table.getVisibleLeafColumns().length} />
               </tr>
             ) : null}
           </tbody>
         </table>
-        {!isLoading && visibleRows.length === 0 ? (
-          <p className="lms-data-grid__empty" role="status">
-            {activeGlobalFilter ? "No matching rows." : emptyMessage}
-          </p>
-        ) : null}
       </div>
 
-      <footer className="lms-data-grid__footer">
-        <span aria-live="polite">{pageLabel}</span>
-        {isServerMode || enablePagination ? (
-          <div className="lms-data-grid__pagination">
-            <label>
-              Rows per page
-              <select
-                aria-label="Rows per page"
-                onChange={(event) =>
-                  table.setPageSize(Number(event.target.value))
-                }
-                value={activePagination.pageSize}
-              >
-                {pageSizeOptions.map((size) => (
-                  <option key={size} value={size}>
-                    {size}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <span>
-              Page {Math.min(activePagination.pageIndex + 1, pageCount)} of{" "}
-              {pageCount}
-            </span>
-            <button
-              disabled={activePagination.pageIndex <= 0}
-              onClick={() => table.previousPage()}
-              type="button"
-            >
-              Previous
-            </button>
-            <button
-              disabled={activePagination.pageIndex + 1 >= pageCount}
-              onClick={() => table.nextPage()}
-              type="button"
-            >
-              Next
-            </button>
-          </div>
-        ) : null}
-      </footer>
+      {/* Bottom Footer with Status, Rows Per Page, Pagination */}
+      <GridFooter
+        table={table}
+        totalRows={totalRows}
+        pageSizeOptions={pageSizeOptions}
+        enablePagination={enablePagination}
+        isServerMode={isServerMode}
+      />
     </section>
   );
 }
