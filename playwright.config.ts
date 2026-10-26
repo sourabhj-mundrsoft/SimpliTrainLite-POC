@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 import { isAppSelected } from "./e2e/selected-apps";
 
 const applications = [
-  { id: "application-1", script: "dev:app1", port: 3001 },
+  { id: "simplitrain_lite", script: "dev:app1", port: 3001 },
   { id: "application-2", script: "dev:app2", port: 3002 },
   { id: "application-3", script: "dev:app3", port: 3003 },
 ];

@@ -6,7 +6,7 @@ This repository contains three separate Next.js applications in one pnpm workspa
 
 | Application   | Workspace package    | Local port | Uses the users service? |
 | ------------- | -------------------- | ---------: | ----------------------- |
-| Application 1 | `@lms/application-1` |       3001 | Yes                     |
+| SimpliTrain Lite | `@lms/application-1` |       3001 | Yes                     |
 | Application 2 | `@lms/application-2` |       3002 | Yes                     |
 | Application 3 | `@lms/application-3` |       3003 | No                      |
 
@@ -32,7 +32,7 @@ A platform with first-class Next.js support (for example, Vercel) can build and 
 
 | Hosting project | Root directory       |
 | --------------- | -------------------- |
-| Application 1   | `apps/application-1` |
+| SimpliTrain Lite | `apps/simplitrain_lite` |
 | Application 2   | `apps/application-2` |
 | Application 3   | `apps/application-3` |
 
@@ -41,7 +41,7 @@ For each project:
 1. Connect the GitHub repository and select the appropriate app root directory.
 2. Ensure the platform installs from the pnpm workspace root and includes workspace files outside the app directory. Shared packages are located in `packages/`; a build that omits them will fail.
 3. Use the platform's detected Next.js build settings where possible. If a build command must be set explicitly, run the workspace-filtered command from the repository/workspace context:
-   - `pnpm --filter @lms/application-1 build`
+   - `pnpm --filter @lms/application-1 build` (workspace package for `apps/simplitrain_lite`)
    - `pnpm --filter @lms/application-2 build`
    - `pnpm --filter @lms/application-3 build`
 4. Assign a separate domain or subdomain to each app, such as `app1.example.com`, `app2.example.com`, and `app3.example.com`.

@@ -42,7 +42,7 @@ Use a **monorepo with multiple Next.js applications and shared workspace package
 ```text
 lms-platform (monorepo)
 ├── apps/
-│   ├── application-1  ── Home, Admin, Reports
+│   ├── simplitrain_lite ── Home, Admin, Reports
 │   ├── application-2  ── Home, Reports, Accounting, Settings
 │   └── application-3  ── Home, Course Catalog, Event Schedule
 │
@@ -80,7 +80,7 @@ TanStack Query (data fetching/caching) and Zod (API response validation) are use
 ```text
 lms-platform/
 ├── apps/
-│   ├── application-1/
+│   ├── simplitrain_lite/
 │   │   ├── src/app/            (layout.tsx, page.tsx, admin/, reports/)
 │   │   ├── src/navigation.ts
 │   │   ├── package.json

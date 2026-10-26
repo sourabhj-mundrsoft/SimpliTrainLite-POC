@@ -53,7 +53,7 @@ Playwright uses Chromium. Install the browser once with `pnpm exec playwright in
 
 ```text
 apps/
-  application-1/  ── navigation config + Home, Admin, Reports pages
+  simplitrain_lite/ ── navigation config + Home, Admin, Reports pages
   application-2/  ── navigation config + Home, Reports, Accounting, Settings pages
   application-3/  ── navigation config + Home, Course Catalog, Event Schedule pages
 packages/
