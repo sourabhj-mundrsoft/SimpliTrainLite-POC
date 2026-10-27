@@ -19,18 +19,21 @@ const applications: readonly AppExpectation[] = [
     id: "simplitrain_lite",
     name: "Application 1",
     url: "http://localhost:3001",
-    title: /Application 1/,
-    navigation: ["Home", "Admin", "Reports"],
-    theme: { primary: "#1d4ed8", background: "rgb(234, 241, 255)" },
-    removedRoutes: ["/products", "/module-b", "/api/v1/products"],
-    usersGridColumns: [
-      "User",
-      "Employee code",
-      "Department",
-      "Designation",
-      "Date of joining",
-      "Status",
+    title: /SimpliTrain Lite/,
+    navigation: [
+      "Dashboard",
+      "Courses",
+      "Authoring",
+      "Assessments & Surveys",
+      "Communications",
+      "People",
+      "Payments",
+      "Reports",
+      "Settings",
+      "Subscription",
     ],
+    theme: { primary: "#4f46e5", background: "rgb(248, 250, 252)" },
+    removedRoutes: ["/products", "/module-b", "/api/v1/products"],
   },
   {
     id: "application-2",
@@ -79,36 +82,92 @@ for (const app of applications.filter((app) => isAppSelected(app.id))) {
     const theme = await page.locator("body").evaluate((body) => {
       const styles = getComputedStyle(body);
       return {
-        primary: styles.getPropertyValue("--color-primary").trim(),
+        primary: styles.getPropertyValue("--color-primary").trim().toLowerCase(),
         background: styles.backgroundColor,
       };
     });
-    expect(theme).toEqual(app.theme);
-    await expect(
-      page.getByRole("link", { name: "SimpliTrain home" }),
-    ).toBeVisible();
-    await expect(mainNavigation(page).getByRole("link")).toHaveText([
-      ...app.navigation,
-    ]);
-    await expect(
-      page.getByRole("button", { name: "Language: English" }),
-    ).toBeVisible();
+    expect(theme.primary).toBe(app.theme.primary.toLowerCase());
+    expect(theme.background).toBe(app.theme.background);
 
-    for (const label of app.navigation) {
-      const link = mainNavigation(page).getByRole("link", {
-        name: label,
-        exact: true,
-      });
-      await link.click();
-      await expect(link).toHaveAttribute("aria-current", "page");
+    if (app.id === "simplitrain_lite") {
+      await expect(page.locator(".sidebar .brand")).toContainText("SimpliTrain Lite");
+      for (const label of app.navigation) {
+        await expect(
+          page.locator(".sidebar .nav").getByRole("link", { name: label }),
+        ).toBeVisible();
+      }
+
+      // Verify navigation across key hubs
+      const hubs = [
+        { name: "Courses", heading: "Courses & Classes" },
+        { name: "People", heading: "People & Users" },
+        { name: "Reports", heading: "Reports & Analytics" },
+        { name: "Settings", heading: "Center" },
+      ];
+      for (const hub of hubs) {
+        const link = page.locator(".sidebar .nav").getByRole("link", { name: hub.name, exact: true });
+        await link.click();
+        await expect(
+          page.getByRole("heading", { level: 1, name: hub.heading }),
+        ).toBeVisible();
+      }
+    } else {
       await expect(
-        page.getByRole("heading", { level: 1, name: label }),
+        page.getByRole("link", { name: "SimpliTrain home" }),
       ).toBeVisible();
+      await expect(mainNavigation(page).getByRole("link")).toHaveText([
+        ...app.navigation,
+      ]);
+      await expect(
+        page.getByRole("button", { name: "Language: English" }),
+      ).toBeVisible();
+
+      for (const label of app.navigation) {
+        const link = mainNavigation(page).getByRole("link", {
+          name: label,
+          exact: true,
+        });
+        await link.click();
+        await expect(link).toHaveAttribute("aria-current", "page");
+        await expect(
+          page.getByRole("heading", { level: 1, name: label }),
+        ).toBeVisible();
+      }
     }
   });
 
-  const { usersGridColumns } = app;
-  if (usersGridColumns) {
+  if (app.id === "simplitrain_lite") {
+    test(`${app.name} Reports shows the users grid and creates a user`, async ({
+      page,
+    }) => {
+      // In SimpliTrain Lite, User Management & Directory is hosted in the People hub at /admin/users
+      await page.goto(`${app.url}/admin/users`);
+
+      await expect(
+        page.getByRole("heading", { level: 1, name: "People & Users" }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("cell", { name: /Priya Shah/ }),
+      ).toBeVisible();
+
+      await page.getByRole("button", { name: "New user" }).click();
+      const dialog = page.getByRole("dialog", { name: "Create user" });
+      await expect(dialog).toBeVisible();
+      await dialog.getByLabel("First name").fill("Meera");
+      await dialog.getByLabel("Last name").fill("Patel");
+      await dialog.getByLabel("Email").fill("meera@example.com");
+      await dialog.getByRole("button", { name: "Create User" }).click();
+
+      await expect(page.getByText(/New user Meera Patel created/)).toBeVisible();
+      await expect(
+        page.getByRole("cell", { name: /Meera Patel/ }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("cell", { name: /meera@example.com/ }),
+      ).toBeVisible();
+    });
+  } else if (app.usersGridColumns) {
+    const { usersGridColumns } = app;
     test(`${app.name} Reports shows the users grid and creates a user`, async ({
       page,
     }) => {

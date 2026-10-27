@@ -827,6 +827,7 @@ export default function UsersDirectoryPage() {
         <div
           role="dialog"
           aria-modal="true"
+          aria-label={editingUser ? "Edit User" : "Create user"}
           style={{
             position: "fixed",
             inset: 0,
@@ -875,10 +876,11 @@ export default function UsersDirectoryPage() {
             <form onSubmit={handleSaveUser} style={{ padding: 20, display: "flex", flexDirection: "column", gap: 14 }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div className="field">
-                  <label className="label">
-                    First Name <span style={{ color: "var(--danger)" }}>*</span>
+                  <label className="label" htmlFor="user-first-name">
+                    First name <span style={{ color: "var(--danger)" }}>*</span>
                   </label>
                   <input
+                    id="user-first-name"
                     type="text"
                     required
                     value={formFirst}
@@ -886,10 +888,11 @@ export default function UsersDirectoryPage() {
                   />
                 </div>
                 <div className="field">
-                  <label className="label">
-                    Last Name <span style={{ color: "var(--danger)" }}>*</span>
+                  <label className="label" htmlFor="user-last-name">
+                    Last name <span style={{ color: "var(--danger)" }}>*</span>
                   </label>
                   <input
+                    id="user-last-name"
                     type="text"
                     required
                     value={formLast}
@@ -909,10 +912,11 @@ export default function UsersDirectoryPage() {
                   />
                 </div>
                 <div className="field">
-                  <label className="label">
-                    Email Address <span style={{ color: "var(--danger)" }}>*</span>
+                  <label className="label" htmlFor="user-email">
+                    Email <span style={{ color: "var(--danger)" }}>*</span>
                   </label>
                   <input
+                    id="user-email"
                     type="email"
                     required
                     placeholder="jdoe@company.com"
