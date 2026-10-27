@@ -167,7 +167,7 @@ export default function AuthoringPage() {
   const [isAiGenerating, setIsAiGenerating] = useState(false);
   const [aiProgress, setAiProgress] = useState(0);
   const [aiStageText, setAiStageText] = useState("");
-  const [hasGeneratedAi, setHasGeneratedAi] = useState(true);
+  const [, setHasGeneratedAi] = useState(true);
 
   const [aiOutline, setAiOutline] = useState([
     { id: "o1", title: "Recognizing Ergonomic Risk Factors in Remote Work", min: 8 },

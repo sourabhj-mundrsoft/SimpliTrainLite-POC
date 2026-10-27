@@ -498,7 +498,7 @@ export default function UsersDirectoryPage() {
             <button
               key={tab.key}
               type="button"
-              onClick={() => setActiveTab(tab.key as any)}
+              onClick={() => setActiveTab(tab.key as "all" | "learners" | "instructors" | "managers" | "admins" | "groups")}
               style={{
                 padding: "10px 18px",
                 border: "none",
@@ -619,10 +619,6 @@ export default function UsersDirectoryPage() {
                 ) : (
                   filteredUsers.map((u) => {
                     const initials = (u.firstName[0] || "") + (u.lastName[0] || "");
-                    const isSuper = u.roles.includes("Super User");
-                    const isAdmin = u.roles.includes("Administrator");
-                    const isInstr = u.roles.includes("Instructor");
-                    const isMgr = u.roles.includes("Manager");
 
                     return (
                       <tr key={u.id}>

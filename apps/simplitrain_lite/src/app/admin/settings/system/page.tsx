@@ -126,7 +126,7 @@ export default function SystemSettingsPage() {
     setExpandedCards((prev) => ({ ...prev, [secId]: !prev[secId] }));
   }
 
-  function updateVal(key: keyof typeof values, val: any) {
+  function updateVal<K extends keyof typeof values>(key: K, val: (typeof values)[K]) {
     setValues((prev) => ({ ...prev, [key]: val }));
     setDirty(true);
   }

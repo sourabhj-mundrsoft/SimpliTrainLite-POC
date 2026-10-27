@@ -144,7 +144,7 @@ export default function SiteBuilderPage() {
   }
 
   function addComponent(type: string) {
-    const newId = `${type}-${Date.now().toString().slice(-4)}`;
+    const newId = `${type}-${components.length + 1}`;
     const template = availablePalette.find((p) => p.type === type);
     const newComp: PageComponent = {
       id: newId,
@@ -181,7 +181,7 @@ export default function SiteBuilderPage() {
     setSelectedId(next[0].id);
   }
 
-  function updateSelected(key: keyof PageComponent, val: any) {
+  function updateSelected(key: keyof PageComponent, val: string | string[] | undefined) {
     if (!selectedComp) return;
     const next = components.map((c) => (c.id === selectedId ? { ...c, [key]: val } : c));
     setComponents(next);

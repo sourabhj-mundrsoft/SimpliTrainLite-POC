@@ -242,7 +242,7 @@ export default function CommsPage() {
   const [editingTemplate, setEditingTemplate] = useState<NotificationTemplate | null>(null);
 
   // Discussions state
-  const [discussions, setDiscussions] = useState<DiscussionThread[]>(INITIAL_DISCUSSIONS);
+  const [discussions] = useState<DiscussionThread[]>(INITIAL_DISCUSSIONS);
   const [discSearch, setDiscSearch] = useState("");
 
   // Templates state
@@ -438,7 +438,7 @@ export default function CommsPage() {
               <span style={{ color: "var(--muted)" }}>Status:</span>
               <select
                 value={annStatusFilter}
-                onChange={(e) => setAnnStatusFilter(e.target.value as any)}
+                onChange={(e) => setAnnStatusFilter(e.target.value as "all" | "active" | "inactive")}
                 style={{ padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)" }}
               >
                 <option value="all">All Announcements</option>
@@ -774,7 +774,7 @@ export default function CommsPage() {
                 <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Target Audience</label>
                 <select
                   value={newAnnAudience}
-                  onChange={(e) => setNewAnnAudience(e.target.value as any)}
+                  onChange={(e) => setNewAnnAudience(e.target.value as "All Learners" | "Engineering Cohort" | "Leadership Team" | "New Hires")}
                   style={{ width: "100%", padding: "8px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)" }}
                 >
                   <option>All Learners</option>
@@ -788,7 +788,7 @@ export default function CommsPage() {
                 <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Priority Level</label>
                 <select
                   value={newAnnPriority}
-                  onChange={(e) => setNewAnnPriority(e.target.value as any)}
+                  onChange={(e) => setNewAnnPriority(e.target.value as "Normal" | "High" | "Urgent")}
                   style={{ width: "100%", padding: "8px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)" }}
                 >
                   <option>Normal</option>

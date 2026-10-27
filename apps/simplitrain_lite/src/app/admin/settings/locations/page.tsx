@@ -288,7 +288,7 @@ export default function LocationsSettingsPage() {
               <span className="small muted">Status:</span>
               <select
                 value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value as any)}
+                onChange={(e) => setFilterStatus(e.target.value as "all" | "enabled" | "disabled")}
                 style={{
                   padding: "6px 10px",
                   borderRadius: 6,
@@ -307,7 +307,7 @@ export default function LocationsSettingsPage() {
               <span className="small muted">Type:</span>
               <select
                 value={filterType}
-                onChange={(e) => setFilterType(e.target.value as any)}
+                onChange={(e) => setFilterType(e.target.value as "all" | "Physical" | "Virtual")}
                 style={{
                   padding: "6px 10px",
                   borderRadius: 6,
@@ -585,7 +585,7 @@ export default function LocationsSettingsPage() {
                 </label>
                 <select
                   value={form.type || "Physical"}
-                  onChange={(e) => setForm({ ...form, type: e.target.value as any })}
+                  onChange={(e) => setForm({ ...form, type: e.target.value as Classroom["type"] })}
                   style={{ width: "100%", padding: "8px 12px", borderRadius: 6, border: "1px solid var(--border)" }}
                 >
                   <option value="Physical">Physical Venue / Room</option>

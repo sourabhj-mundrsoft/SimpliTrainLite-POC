@@ -138,39 +138,44 @@ const ThemeContext = createContext<ThemeContextType>({
   isLoading: false,
 });
 
+function getInitialTheme(): SharedTheme {
+  if (typeof window === "undefined") return defaultSharedTheme;
+  try {
+    const cached =
+      localStorage.getItem("simplitrain.shared_theme") ||
+      localStorage.getItem("lite.v2.branding");
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      return parsed.colors
+        ? {
+            preset: parsed.preset || "slate-indigo",
+            themeMode: parsed.mode || "light",
+            primaryAccent: parsed.colors.primary || "#4F46E5",
+            sidebarBg: parsed.colors.sidebar || "#1E293B",
+            sidebarText: parsed.colors.sidebarText || "#E2E8F0",
+            topbarBg: parsed.colors.topbar || "#FFFFFF",
+            pageBg: parsed.colors.pageBg || "#F8FAFC",
+            titleTint: parsed.colors.titleTint || "#E8ECF7",
+            updatedAt: parsed.saved,
+          }
+        : parsed;
+    }
+  } catch {}
+  return defaultSharedTheme;
+}
+
 export function ThemeSyncProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<SharedTheme>(defaultSharedTheme);
+  const [theme, setTheme] = useState<SharedTheme>(getInitialTheme);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Initial load from localStorage & setup cross-window listeners
+  // Apply whenever theme state changes
   useEffect(() => {
-    // 1. Immediately apply cached theme from localStorage
-    try {
-      const cached =
-        localStorage.getItem("simplitrain.shared_theme") ||
-        localStorage.getItem("lite.v2.branding");
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        const resolved: SharedTheme = parsed.colors
-          ? {
-              preset: parsed.preset || "slate-indigo",
-              themeMode: parsed.mode || "light",
-              primaryAccent: parsed.colors.primary || "#4F46E5",
-              sidebarBg: parsed.colors.sidebar || "#1E293B",
-              sidebarText: parsed.colors.sidebarText || "#E2E8F0",
-              topbarBg: parsed.colors.topbar || "#FFFFFF",
-              pageBg: parsed.colors.pageBg || "#F8FAFC",
-              titleTint: parsed.colors.titleTint || "#E8ECF7",
-              updatedAt: parsed.saved,
-            }
-          : parsed;
+    applyThemeToDocument(theme);
+  }, [theme]);
 
-        setTheme(resolved);
-        applyThemeToDocument(resolved);
-      }
-    } catch {}
-
-    // 2. Listen to storage events across tabs/windows in same origin
+  // Setup cross-window listeners
+  useEffect(() => {
+    // Listen to storage events across tabs/windows in same origin
     function onStorage(e: StorageEvent) {
       if (e.key === "simplitrain.shared_theme" || e.key === "lite.v2.branding") {
         try {
@@ -197,7 +202,7 @@ export function ThemeSyncProvider({ children }: { children: ReactNode }) {
     }
     window.addEventListener("storage", onStorage);
 
-    // 3. Listen to BroadcastChannel for real-time cross-tab updates
+    // Listen to BroadcastChannel for real-time cross-tab updates
     let channel: BroadcastChannel | null = null;
     try {
       if (typeof BroadcastChannel !== "undefined") {

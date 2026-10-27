@@ -69,7 +69,7 @@ export default function IntegrationsSettingsPage() {
   const [showStripeSecret, setShowStripeSecret] = useState(false);
 
   // SSO settings
-  const [ssoProviders, setSsoProviders] = useState([
+  const [ssoProviders] = useState([
     { id: "sso-1", name: "Microsoft Entra ID (Azure AD)", type: "OpenID Connect", status: "Active", users: 142 },
     { id: "sso-2", name: "Google Workspace for Education", type: "SAML 2.0", status: "Active", users: 89 },
   ]);
@@ -78,7 +78,7 @@ export default function IntegrationsSettingsPage() {
   const [hostModalOpen, setHostModalOpen] = useState(false);
   const [newHost, setNewHost] = useState({
     name: "",
-    provider: "Zoom" as const,
+    provider: "Zoom" as MeetingHost["provider"],
     accountEmail: "",
   });
 
@@ -188,7 +188,7 @@ export default function IntegrationsSettingsPage() {
             type="button"
             role="tab"
             aria-selected={activeTab === tab.key}
-            onClick={() => setActiveTab(tab.key as any)}
+            onClick={() => setActiveTab(tab.key as IntegrationTab)}
             style={{
               padding: "10px 16px",
               border: "none",
@@ -672,7 +672,7 @@ export default function IntegrationsSettingsPage() {
                 </label>
                 <select
                   value={newHost.provider}
-                  onChange={(e) => setNewHost({ ...newHost, provider: e.target.value as any })}
+                  onChange={(e) => setNewHost({ ...newHost, provider: e.target.value as MeetingHost["provider"] })}
                   style={{ width: "100%", padding: "7px 10px", borderRadius: 6, border: "1px solid var(--border)" }}
                 >
                   <option value="Zoom">Zoom</option>

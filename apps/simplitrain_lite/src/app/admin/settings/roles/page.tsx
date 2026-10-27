@@ -370,7 +370,7 @@ export default function RolesSettingsPage() {
               <span className="small muted">Role Type:</span>
               <select
                 value={filterType}
-                onChange={(e) => setFilterType(e.target.value as any)}
+                onChange={(e) => setFilterType(e.target.value as "all" | "builtin" | "custom")}
                 style={{
                   padding: "6px 10px",
                   borderRadius: 6,

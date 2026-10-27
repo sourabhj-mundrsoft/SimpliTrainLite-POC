@@ -110,7 +110,7 @@ export default function CustomFieldsSettingsPage() {
 
   const [fields, setFields] = useState<CustomFieldDef[]>(initialCustomFields);
   const [interests, setInterests] = useState<InterestDef[]>(initialInterests);
-  const [groups, setGroups] = useState(initialGroups);
+  const [groups] = useState(initialGroups);
 
   // Field Drawer / Modal
   const [modalOpen, setModalOpen] = useState(false);
@@ -143,7 +143,7 @@ export default function CustomFieldsSettingsPage() {
 
   function openCreateField() {
     setFieldForm({
-      entity: entityFilter === "All" ? "Class" : (entityFilter as any),
+      entity: entityFilter === "All" ? "Class" : (entityFilter as CustomFieldDef["entity"]),
       label: "",
       key: "",
       type: "Text",
@@ -552,7 +552,7 @@ export default function CustomFieldsSettingsPage() {
                 </label>
                 <select
                   value={fieldForm.entity || "Class"}
-                  onChange={(e) => setFieldForm({ ...fieldForm, entity: e.target.value as any })}
+                  onChange={(e) => setFieldForm({ ...fieldForm, entity: e.target.value as CustomFieldDef["entity"] })}
                   style={{ width: "100%", padding: "7px 10px", borderRadius: 6, border: "1px solid var(--border)" }}
                 >
                   <option value="Class">Class</option>
@@ -582,7 +582,7 @@ export default function CustomFieldsSettingsPage() {
                 </label>
                 <select
                   value={fieldForm.type || "Text"}
-                  onChange={(e) => setFieldForm({ ...fieldForm, type: e.target.value as any })}
+                  onChange={(e) => setFieldForm({ ...fieldForm, type: e.target.value as CustomFieldDef["type"] })}
                   style={{ width: "100%", padding: "7px 10px", borderRadius: 6, border: "1px solid var(--border)" }}
                 >
                   <option value="Text">Single-line Text</option>
