@@ -1,4 +1,4 @@
-import { AppShell } from "@lms/shared-ui";
+import { AppShell, ThemeSyncProvider } from "@lms/shared-ui";
 import type { Metadata } from "next";
 import { QueryProvider } from "@/components/query-provider";
 import { navigation } from "@/navigation";
@@ -18,14 +18,16 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <QueryProvider>
-          <AppShell
-            cartCount={3}
-            hasUnreadNotifications
-            navigation={navigation}
-            user={{ name: "Demo User", initials: "DU" }}
-          >
-            {children}
-          </AppShell>
+          <ThemeSyncProvider>
+            <AppShell
+              cartCount={3}
+              hasUnreadNotifications
+              navigation={navigation}
+              user={{ name: "Demo User", initials: "DU" }}
+            >
+              {children}
+            </AppShell>
+          </ThemeSyncProvider>
         </QueryProvider>
       </body>
     </html>

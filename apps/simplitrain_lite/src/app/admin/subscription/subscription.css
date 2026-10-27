@@ -1,0 +1,160 @@
+/* Subscription & Billing Hub Styling - SimpliTrain Lite (Ditto Wireframe) */
+
+.sub-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.sub-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  color: var(--text);
+}
+
+.sub-header .sub {
+  color: var(--muted);
+  font-size: 14px;
+  max-width: 720px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Sub-nav tabs */
+.sub-subnav {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+  overflow-x: auto;
+  padding-bottom: 1px;
+}
+
+.sub-subnav .tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.sub-subnav .tab-btn:hover {
+  color: var(--text);
+  border-bottom-color: var(--border-strong);
+}
+
+.sub-subnav .tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+
+/* Overview Layout */
+.ov-top {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .ov-top {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Meter */
+.meter-row {
+  margin-bottom: 16px;
+}
+
+.meter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13.5px;
+  margin-bottom: 6px;
+}
+
+.meter-track {
+  height: 8px;
+  background: var(--surface-2);
+  border-radius: 99px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.meter-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.3s ease;
+}
+
+/* Pricing Matrix Cards */
+.plan-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.plan-card {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.plan-card:hover {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-md);
+}
+
+.plan-card.current {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.plan-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 99px;
+}
+
+.plan-features {
+  list-style: none;
+  padding: 0;
+  margin: 18px 0;
+  display: grid;
+  gap: 10px;
+  font-size: 13.5px;
+}
+
+.plan-features li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
