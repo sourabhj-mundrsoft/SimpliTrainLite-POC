@@ -221,12 +221,12 @@ export const BRANDING_PRESETS: ThemePreset[] = [
 ];
 
 export function cleanColors(raw?: Partial<BrandingColors>): BrandingColors {
-  const o: any = {};
+  const o = {} as BrandingColors;
   for (const k in DEFAULT_BRANDING_COLORS) {
     const key = k as keyof BrandingColors;
     o[key] = normHex(raw && raw[key]) || (key === "link" ? "" : DEFAULT_BRANDING_COLORS[key]);
   }
-  return o as BrandingColors;
+  return o;
 }
 
 export function deriveCssVars(colors: BrandingColors): {

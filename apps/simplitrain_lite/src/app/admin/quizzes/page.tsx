@@ -383,7 +383,7 @@ export default function QuizzesPage() {
               <span style={{ color: "var(--muted)" }}>Status:</span>
               <select
                 value={enabledFilter}
-                onChange={(e) => setEnabledFilter(e.target.value as any)}
+                onChange={(e) => setEnabledFilter(e.target.value as "all" | "enabled" | "disabled")}
                 style={{ padding: "6px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)" }}
               >
                 <option value="all">All</option>

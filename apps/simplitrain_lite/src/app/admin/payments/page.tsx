@@ -841,7 +841,7 @@ export default function PaymentsPage() {
                 <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Payment Status</label>
                 <select
                   value={newPaymentStatus}
-                  onChange={(e) => setNewPaymentStatus(e.target.value as any)}
+                  onChange={(e) => setNewPaymentStatus(e.target.value as "Paid" | "Unpaid" | "Partial")}
                   style={{ width: "100%", padding: "8px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)" }}
                 >
                   <option value="Paid">Paid</option>
@@ -973,7 +973,7 @@ export default function PaymentsPage() {
                 <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Discount Mode</label>
                 <select
                   value={newCouponMode}
-                  onChange={(e) => setNewCouponMode(e.target.value as any)}
+                  onChange={(e) => setNewCouponMode(e.target.value as Coupon["mode"])}
                   style={{ width: "100%", padding: "8px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border)", background: "var(--surface-2)", color: "var(--text)" }}
                 >
                   <option value="Percentage">Percentage (%)</option>

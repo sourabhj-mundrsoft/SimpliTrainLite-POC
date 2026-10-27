@@ -307,8 +307,8 @@ export default function CoursesPage() {
 
   // Classes & Enrollments state
   const [classesList, setClassesList] = useState<ClassItem[]>(INITIAL_CLASSES);
-  const [enrollmentsList, setEnrollmentsList] = useState<EnrollmentItem[]>(INITIAL_ENROLLMENTS);
-  const [plansList, setPlansList] = useState<LearningPlanItem[]>(INITIAL_PLANS);
+  const [enrollmentsList] = useState<EnrollmentItem[]>(INITIAL_ENROLLMENTS);
+  const [plansList] = useState<LearningPlanItem[]>(INITIAL_PLANS);
   const [toast, setToast] = useState<string | null>(null);
 
   function showToast(msg: string) {
@@ -536,7 +536,7 @@ export default function CoursesPage() {
             <button
               key={tab.key}
               type="button"
-              onClick={() => setActiveTab(tab.key as any)}
+              onClick={() => setActiveTab(tab.key as "courses" | "classes" | "enrollments" | "plans")}
               style={{
                 padding: "10px 18px",
                 border: "none",
@@ -1203,7 +1203,7 @@ export default function CoursesPage() {
                   <label className="label">Delivery Format</label>
                   <select
                     value={newCourseDelivery}
-                    onChange={(e) => setNewCourseDelivery(e.target.value as any)}
+                    onChange={(e) => setNewCourseDelivery(e.target.value as CourseItem["delivery"])}
                   >
                     <option value="Live (class-based)">Live (class-based)</option>
                     <option value="Self-paced">Self-paced</option>

@@ -201,8 +201,7 @@ export function ReportsHub() {
   const [activeTab, setActiveTab] = useState<"overview" | "attendance" | "signins" | "activity" | "meetings">("overview");
 
   // Filter states
-  const [searchQuery, setSearchQuery] = useState("");
-
+  
   // Export CSV
   const handleExportAttendanceCsv = () => {
     const headers = ["Class Name", "Session Date", "Instructor", "Total Roster", "Present", "Absent", "Attendance Rate"];

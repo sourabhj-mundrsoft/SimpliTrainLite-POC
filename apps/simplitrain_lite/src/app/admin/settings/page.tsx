@@ -231,7 +231,33 @@ export default function CenterSettingsPage() {
   });
 
   // Section fields state
-  const [values, setValues] = useState<Record<string, any>>({
+  type GeneralSettingsValues = {
+    owner: string;
+    franchiseId: string;
+    description: string;
+    culture: string;
+    timeZone: string;
+    loginTitle: string;
+    assignable: boolean;
+    anonSignup: boolean;
+    termsUrl: string;
+    email: string;
+    phone: string;
+    address: string;
+    city: string;
+    state: string;
+    zip: string;
+    country: string;
+    enableCatalog: boolean;
+    showPrice: boolean;
+    minCap: number;
+    maxCap: number;
+    recMode: string;
+    cancelWindow: number;
+    cancelWarning: string;
+  };
+
+  const [values, setValues] = useState<GeneralSettingsValues>({
     owner: "Priya Shah",
     franchiseId: "FRAN-042",
     description: "Acme Training delivers compliance and workplace-safety courses to teams in the Midwest.",
@@ -257,7 +283,7 @@ export default function CenterSettingsPage() {
     cancelWarning: "Are you sure you want to late cancel this enrollment?",
   });
 
-  const [dirty, setDirty] = useState(false);
+  const [, setDirty] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   // Side-panel drawer state
@@ -274,7 +300,7 @@ export default function CenterSettingsPage() {
     }));
   }
 
-  function updateVal(key: string, val: any) {
+  function updateVal<K extends keyof GeneralSettingsValues>(key: K, val: GeneralSettingsValues[K]) {
     setValues((prev) => ({ ...prev, [key]: val }));
     setDirty(true);
   }

@@ -498,7 +498,7 @@ export default function UsersDirectoryPage() {
             <button
               key={tab.key}
               type="button"
-              onClick={() => setActiveTab(tab.key as any)}
+              onClick={() => setActiveTab(tab.key as "all" | "learners" | "instructors" | "managers" | "admins" | "groups")}
               style={{
                 padding: "10px 18px",
                 border: "none",
@@ -619,10 +619,6 @@ export default function UsersDirectoryPage() {
                 ) : (
                   filteredUsers.map((u) => {
                     const initials = (u.firstName[0] || "") + (u.lastName[0] || "");
-                    const isSuper = u.roles.includes("Super User");
-                    const isAdmin = u.roles.includes("Administrator");
-                    const isInstr = u.roles.includes("Instructor");
-                    const isMgr = u.roles.includes("Manager");
 
                     return (
                       <tr key={u.id}>
@@ -831,6 +827,7 @@ export default function UsersDirectoryPage() {
         <div
           role="dialog"
           aria-modal="true"
+          aria-label={editingUser ? "Edit User" : "Create user"}
           style={{
             position: "fixed",
             inset: 0,
@@ -879,10 +876,11 @@ export default function UsersDirectoryPage() {
             <form onSubmit={handleSaveUser} style={{ padding: 20, display: "flex", flexDirection: "column", gap: 14 }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div className="field">
-                  <label className="label">
-                    First Name <span style={{ color: "var(--danger)" }}>*</span>
+                  <label className="label" htmlFor="user-first-name">
+                    First name <span style={{ color: "var(--danger)" }}>*</span>
                   </label>
                   <input
+                    id="user-first-name"
                     type="text"
                     required
                     value={formFirst}
@@ -890,10 +888,11 @@ export default function UsersDirectoryPage() {
                   />
                 </div>
                 <div className="field">
-                  <label className="label">
-                    Last Name <span style={{ color: "var(--danger)" }}>*</span>
+                  <label className="label" htmlFor="user-last-name">
+                    Last name <span style={{ color: "var(--danger)" }}>*</span>
                   </label>
                   <input
+                    id="user-last-name"
                     type="text"
                     required
                     value={formLast}
@@ -913,10 +912,11 @@ export default function UsersDirectoryPage() {
                   />
                 </div>
                 <div className="field">
-                  <label className="label">
-                    Email Address <span style={{ color: "var(--danger)" }}>*</span>
+                  <label className="label" htmlFor="user-email">
+                    Email <span style={{ color: "var(--danger)" }}>*</span>
                   </label>
                   <input
+                    id="user-email"
                     type="email"
                     required
                     placeholder="jdoe@company.com"

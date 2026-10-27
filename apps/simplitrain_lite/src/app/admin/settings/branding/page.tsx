@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
   useThemeSync,
   BRANDING_PRESETS,
@@ -35,47 +35,26 @@ const SUGGESTIONS = [
 export default function AdminBrandingPage() {
   const { theme, updateTheme } = useThemeSync();
 
-  const [selectedPreset, setSelectedPreset] = useState<string>("slate-indigo");
-  const [colors, setColors] = useState<BrandingColors>({
-    primary: "#4F46E5",
-    sidebar: "#1E293B",
-    sidebarText: "#E2E8F0",
-    topbar: "#FFFFFF",
-    pageBg: "#F8FAFC",
-    titleTint: "#E8ECF7",
+  const [selectedPreset, setSelectedPreset] = useState<string>(() => theme?.preset || "slate-indigo");
+  const [colors, setColors] = useState<BrandingColors>(() => ({
+    primary: theme?.primaryAccent || "#4F46E5",
+    sidebar: theme?.sidebarBg || "#1E293B",
+    sidebarText: theme?.sidebarText || "#E2E8F0",
+    topbar: theme?.topbarBg || "#FFFFFF",
+    pageBg: theme?.pageBg || "#F8FAFC",
+    titleTint: theme?.titleTint || "#E8ECF7",
     link: "",
-  });
-  const [colorMode, setColorMode] = useState<"light" | "dark">("light");
-  const [previewMode, setPreviewMode] = useState<"light" | "dark">("light");
+  }));
+  const [colorMode, setColorMode] = useState<"light" | "dark">(() => theme?.themeMode === "dark" ? "dark" : "light");
+  const [previewMode, setPreviewMode] = useState<"light" | "dark">(() => theme?.themeMode === "dark" ? "dark" : "light");
   const [followPrimaryLink, setFollowPrimaryLink] = useState(true);
-  const [logoName, setLogoName] = useState("Acme Training Center");
+  const [logoName, setLogoName] = useState(() => theme?.logoUrl || "Acme Training Center");
   const [lmsTheme, setLmsTheme] = useState("Not Set");
   const [dirty, setDirty] = useState(false);
   const [showReview, setShowReview] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [showRealScreensModal, setShowRealScreensModal] = useState(false);
   const [activeModalScreen, setActiveModalScreen] = useState<string>("dashboard");
-
-  // Sync state from active theme provider on mount
-  useEffect(() => {
-    if (theme) {
-      setSelectedPreset(theme.preset || "slate-indigo");
-      setColorMode(theme.themeMode === "dark" ? "dark" : "light");
-      setPreviewMode(theme.themeMode === "dark" ? "dark" : "light");
-      setColors({
-        primary: theme.primaryAccent || "#4F46E5",
-        sidebar: theme.sidebarBg || "#1E293B",
-        sidebarText: theme.sidebarText || "#E2E8F0",
-        topbar: theme.topbarBg || "#FFFFFF",
-        pageBg: theme.pageBg || "#F8FAFC",
-        titleTint: theme.titleTint || "#E8ECF7",
-        link: "",
-      });
-      if (theme.logoUrl) {
-        setLogoName(theme.logoUrl);
-      }
-    }
-  }, [theme]);
 
   // Derived variables for preview and mini cards
   const currentVars = useMemo(() => deriveCssVars(colors), [colors]);
