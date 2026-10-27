@@ -1,4 +1,4 @@
-import { AppShell } from "@lms/shared-ui";
+import { AppShell, ThemeSyncProvider } from "@lms/shared-ui";
 import type { Metadata } from "next";
 import { navigation } from "@/navigation";
 import "./globals.css";
@@ -16,14 +16,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AppShell
-          cartCount={3}
-          hasUnreadNotifications
-          navigation={navigation}
-          user={{ name: "Demo User", initials: "DU" }}
-        >
-          {children}
-        </AppShell>
+        <ThemeSyncProvider>
+          <AppShell
+            cartCount={3}
+            hasUnreadNotifications
+            navigation={navigation}
+            user={{ name: "Demo User", initials: "DU" }}
+          >
+            {children}
+          </AppShell>
+        </ThemeSyncProvider>
       </body>
     </html>
   );

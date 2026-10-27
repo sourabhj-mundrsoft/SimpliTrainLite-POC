@@ -293,3 +293,31 @@ export const defaultSettings: AllSettings = {
     },
   ],
 };
+
+export type SharedThemeSettings = {
+  preset: string;
+  themeMode: "light" | "dark" | "system";
+  primaryAccent: string;
+  sidebarBg: string;
+  sidebarText: string;
+  topbarBg: string;
+  pageBg: string;
+  titleTint: string;
+  siteTitle: string;
+  logoUrl?: string;
+  updatedAt: string;
+};
+
+export const defaultThemeSettings: SharedThemeSettings = {
+  preset: "slate-indigo",
+  themeMode: "light",
+  primaryAccent: "#4F46E5",
+  sidebarBg: "#1E293B",
+  sidebarText: "#E2E8F0",
+  topbarBg: "#FFFFFF",
+  pageBg: "#F8FAFC",
+  titleTint: "#E8ECF7",
+  siteTitle: "SimpliTrain Lite",
+  logoUrl: "acme-logo.png",
+  updatedAt: "2026-10-27T12:00:00.000Z",
+};

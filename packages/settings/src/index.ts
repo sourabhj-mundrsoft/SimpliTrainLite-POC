@@ -14,4 +14,6 @@ export {
   type RoleItem,
   type SettingsTabId,
   type SystemSettings,
+  type SharedThemeSettings,
+  defaultThemeSettings,
 } from "./types";

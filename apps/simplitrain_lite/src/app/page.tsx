@@ -1,10 +1,5 @@
-import { PagePlaceholder } from "@lms/shared-ui";
+import { AdminDashboard } from "@/components/admin-dashboard";
 
 export default function HomePage() {
-  return (
-    <PagePlaceholder
-      description="Welcome back. Pick up where you left off."
-      title="Home"
-    />
-  );
+  return <AdminDashboard />;
 }

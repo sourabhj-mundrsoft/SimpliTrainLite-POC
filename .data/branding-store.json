@@ -1,0 +1,13 @@
+{
+  "preset": "slate-indigo",
+  "themeMode": "light",
+  "primaryAccent": "#4F46E5",
+  "sidebarBg": "#1E293B",
+  "sidebarText": "#E2E8F0",
+  "topbarBg": "#FFFFFF",
+  "pageBg": "#F8FAFC",
+  "titleTint": "#E8ECF7",
+  "siteTitle": "SimpliTrain Lite",
+  "logoUrl": "acme-logo.png",
+  "updatedAt": "2026-10-27T08:16:11.996Z"
+}

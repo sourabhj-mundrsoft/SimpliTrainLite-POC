@@ -95,6 +95,9 @@ importers:
 
   apps/application-3:
     dependencies:
+      '@lms/settings':
+        specifier: workspace:*
+        version: link:../../packages/settings
       '@lms/shared-ui':
         specifier: workspace:*
         version: link:../../packages/shared-ui

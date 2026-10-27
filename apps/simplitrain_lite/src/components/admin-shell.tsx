@@ -109,28 +109,38 @@ function NavIcon({ name }: { name: string }) {
   }
 }
 
+import { useThemeSync } from "@lms/shared-ui";
+
 export function SimpliTrainLiteAdminShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const [isDark, setIsDark] = useState(false);
+  const { theme, updateTheme } = useThemeSync();
+  const isDark = theme.themeMode === "dark";
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem("lite-theme");
-    if (saved === "dark") {
-      setIsDark(true);
-      document.documentElement.setAttribute("data-theme", "dark");
-    } else {
-      setIsDark(false);
-      document.documentElement.setAttribute("data-theme", "light");
-    }
+    // Check if lite-brand style already exists; if not, restore from localStorage/sessionStorage
+    try {
+      if (!document.getElementById("lite-brand")) {
+        const stored = sessionStorage.getItem("lite.v2.branding.draft") || localStorage.getItem("lite.v2.branding");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed && parsed.css) {
+            const st = document.createElement("style");
+            st.id = "lite-brand";
+            st.textContent = parsed.css;
+            document.head.appendChild(st);
+          }
+          if (parsed && parsed.mode) {
+            document.documentElement.setAttribute("data-theme", parsed.mode);
+          }
+        }
+      }
+    } catch {}
   }, []);
 
   function toggleTheme() {
-    const next = !isDark;
-    setIsDark(next);
-    const mode = next ? "dark" : "light";
-    document.documentElement.setAttribute("data-theme", mode);
-    localStorage.setItem("lite-theme", mode);
+    const nextMode = isDark ? "light" : "dark";
+    updateTheme({ themeMode: nextMode });
   }
 
   const isSettings = pathname.startsWith("/admin/settings");
@@ -150,7 +160,7 @@ export function SimpliTrainLiteAdminShell({ children }: { children: ReactNode })
               item.key === "settings"
                 ? isSettings
                 : item.href === "/"
-                ? pathname === "/"
+                ? pathname === "/" || pathname === "/admin"
                 : pathname.startsWith(item.href);
 
             return (
