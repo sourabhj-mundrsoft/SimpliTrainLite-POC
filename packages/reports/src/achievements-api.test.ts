@@ -149,4 +149,12 @@ describe("fetchAchievementsFromApi", () => {
     expect(FALLBACK_SAMPLE_ACHIEVEMENTS[0]).toHaveProperty("credentialId");
     expect(FALLBACK_SAMPLE_ACHIEVEMENTS[0]).toHaveProperty("userName");
   });
+
+  it("handles token save, retrieval, and clearing correctly", () => {
+    setStoredAuthToken("jwt-sample-token-123");
+    expect(getStoredAuthToken()).toBe("jwt-sample-token-123");
+    clearStoredAuthToken();
+    expect(getStoredAuthToken()).toBeNull();
+  });
 });
+

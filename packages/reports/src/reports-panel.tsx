@@ -220,74 +220,78 @@ export function ReportsPanel() {
   const [pageSize, setPageSize] = useState(10);
   const [endpointChoice, setEndpointChoice] = useState<"direct" | "proxy">("direct");
   const [isDemoMode, setIsDemoMode] = useState(false);
-  const [hasToken, setHasToken] = useState(false);
+  const [tokenInput, setTokenInput] = useState(() => (typeof window !== "undefined" ? getStoredAuthToken() || "" : ""));
+  const [hasToken, setHasToken] = useState(() => (typeof window !== "undefined" ? Boolean(getStoredAuthToken()) : false));
+  const [refreshIndex, setRefreshIndex] = useState(0);
 
   // Modals & Drawers
   const [isTokenModalOpen, setIsTokenModalOpen] = useState(false);
-  const [tokenInput, setTokenInput] = useState("");
   const [selectedAchievement, setSelectedAchievement] = useState<AchievementRecord | null>(null);
 
-  // Check stored token on load
-  useEffect(() => {
-    const existing = getStoredAuthToken();
-    if (existing) {
-      setHasToken(true);
-      setTokenInput(existing);
-    }
+  // Trigger manual re-fetch
+  const triggerRefresh = useCallback(() => {
+    setIsLoadingAchievements(true);
+    setRefreshIndex((prev) => prev + 1);
   }, []);
 
-  // Fetch Achievements from API
-  const loadAchievements = useCallback(async () => {
-    setIsLoadingAchievements(true);
-    try {
-      const res = await fetchAchievementsFromApi({
-        page,
-        pageSize,
-        searchQuery: searchQuery.trim(),
-        statusFilter,
-        useProxy: endpointChoice === "proxy",
-      });
+  // Fetch Achievements from API (asynchronous effect without cascading renders)
+  useEffect(() => {
+    let ignore = false;
+    if (activeTab !== "achievements") return;
 
-      setAchievementResult(res);
+    async function runFetch() {
+      try {
+        const res = await fetchAchievementsFromApi({
+          page,
+          pageSize,
+          searchQuery: searchQuery.trim(),
+          statusFilter,
+          useProxy: endpointChoice === "proxy",
+        });
 
-      if (res.success && res.data.length > 0) {
-        setAchievements(res.data);
-        setIsDemoMode(false);
-      } else if (!res.success) {
-        // If error occurred (e.g. 401 Unauthorized), keep the error visible.
-        // If demo mode is active or fallback needed, use fallback records so UI is interactive
-        if (isDemoMode) {
-          setAchievements(FALLBACK_SAMPLE_ACHIEVEMENTS);
+        if (ignore) return;
+        setAchievementResult(res);
+
+        if (res.success && res.data.length > 0) {
+          setAchievements(res.data);
+          setIsDemoMode(false);
+        } else if (!res.success) {
+          if (isDemoMode) {
+            setAchievements(FALLBACK_SAMPLE_ACHIEVEMENTS);
+          } else {
+            setAchievements([]);
+          }
         } else {
           setAchievements([]);
         }
-      } else {
-        setAchievements([]);
+      } catch (err) {
+        if (ignore) return;
+        setAchievementResult({
+          success: false,
+          data: [],
+          total: 0,
+          page,
+          pageSize,
+          totalPages: 1,
+          error: {
+            type: "UNKNOWN",
+            message: err instanceof Error ? err.message : "Failed to load achievements",
+            timestamp: new Date().toISOString(),
+          },
+        });
+      } finally {
+        if (!ignore) {
+          setIsLoadingAchievements(false);
+        }
       }
-    } catch (err) {
-      setAchievementResult({
-        success: false,
-        data: [],
-        total: 0,
-        page,
-        pageSize,
-        totalPages: 1,
-        error: {
-          type: "UNKNOWN",
-          message: err instanceof Error ? err.message : "Failed to load achievements",
-          timestamp: new Date().toISOString(),
-        },
-      });
-    } finally {
-      setIsLoadingAchievements(false);
     }
-  }, [page, pageSize, searchQuery, statusFilter, endpointChoice, isDemoMode]);
 
-  useEffect(() => {
-    if (activeTab === "achievements") {
-      void loadAchievements();
-    }
-  }, [activeTab, loadAchievements]);
+    void runFetch();
+
+    return () => {
+      ignore = true;
+    };
+  }, [activeTab, page, pageSize, searchQuery, statusFilter, endpointChoice, isDemoMode, refreshIndex]);
 
   // Handle Token Save
   const handleSaveToken = () => {
@@ -300,7 +304,7 @@ export function ReportsPanel() {
     }
     setIsTokenModalOpen(false);
     setIsDemoMode(false);
-    void loadAchievements();
+    triggerRefresh();
   };
 
   const handleClearToken = () => {
@@ -308,7 +312,7 @@ export function ReportsPanel() {
     setHasToken(false);
     setTokenInput("");
     setIsTokenModalOpen(false);
-    void loadAchievements();
+    triggerRefresh();
   };
 
   // Toggle demo fallback mode
@@ -318,7 +322,7 @@ export function ReportsPanel() {
       setAchievements(FALLBACK_SAMPLE_ACHIEVEMENTS);
     } else {
       setIsDemoMode(false);
-      void loadAchievements();
+      triggerRefresh();
     }
   };
 
@@ -632,7 +636,7 @@ export function ReportsPanel() {
               <button
                 type="button"
                 className="btn sm"
-                onClick={loadAchievements}
+                onClick={triggerRefresh}
                 disabled={isLoadingAchievements}
                 style={{ fontSize: 12 }}
               >
@@ -676,7 +680,7 @@ export function ReportsPanel() {
                   <button
                     type="button"
                     className="btn sm"
-                    onClick={loadAchievements}
+                    onClick={triggerRefresh}
                     disabled={isLoadingAchievements}
                   >
                     Retry Live Request
