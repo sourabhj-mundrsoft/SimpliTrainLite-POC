@@ -11,9 +11,17 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@lms/assessments": "workspace:*",
+    "@lms/authoring": "workspace:*",
+    "@lms/communications": "workspace:*",
+    "@lms/courses": "workspace:*",
     "@lms/data-grid": "workspace:*",
+    "@lms/payments": "workspace:*",
+    "@lms/people": "workspace:*",
+    "@lms/reports": "workspace:*",
     "@lms/settings": "workspace:*",
     "@lms/shared-ui": "workspace:*",
+    "@lms/subscription": "workspace:*",
     "@lms/users": "workspace:*",
     "@tanstack/react-query": "5.104.2",
     "next": "16.4.0",
