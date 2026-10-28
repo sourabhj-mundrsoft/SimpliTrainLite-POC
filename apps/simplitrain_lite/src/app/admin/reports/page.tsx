@@ -1,5 +1,7 @@
-import { ReportsHub } from "../../reports/reports-hub";
+"use client";
 
-export default function AdminReportsPage() {
-  return <ReportsHub />;
+import { ReportsPanel } from "@lms/reports";
+
+export default function Page() {
+  return <ReportsPanel />;
 }

@@ -1,0 +1,26 @@
+{
+  "name": "@lms/reports",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./server": "./src/server.ts"
+  },
+  "dependencies": {
+    "@lms/shared-ui": "workspace:*"
+  },
+  "peerDependencies": {
+    "next": "^16.0.0",
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "next": "16.4.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  }
+}
